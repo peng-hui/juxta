@@ -142,37 +142,27 @@ class CrossCheckers(BaseChecker):
 
     def check(self, funcs):
         # collect functions, which return the same value
-        self.__generate_rtn_funcs_dic(funcs)
+        rtn_paths_list = self.get_rtn_paths_list(funcs)
 
+        rhs_set = set()
         # run store check for each (return, functions) pair
-        for rtn in self.rtn_funcs_dic.keys():
-            '''
-            if len(self.rtn_funcs_dic[rtn]) < 3:
-                continue
-            '''
-
-            ckcross = CrossChecker(rtn, self.pathbin, self.symbol_tbl)
-            rtn_funcs  = self.rtn_funcs_dic[rtn]
-            ckcross.check(rtn_funcs)
-
-            self.cks.append(ckcross)
+        for rtn_paths in rtn_paths_list:
+            for (rtn, retpaths) in rtn_paths.items():
+                for retpath in retpaths:
+                    stores = retpath.get_stores()
+                    if stores == None:
+                        continue
+                    for store in stores:
+                        # check stores.rhs
+                        # remove duplicate one.
+                        assert(store.rhs is not None)
+                        rhs_set.add(store.rhs)
+                        print(store)
 
     def report(self, report_all = True):
         # simply gathering report from all cross checkers
-        for ck in self.cks:
-            continue
         # map(lambda ck: ck.report(report_all), self.cks)
-
-    def __generate_rtn_funcs_dic(self, funcs):
-        rtn_paths_list = self.get_rtn_paths_list(funcs)
-
-        for func, rtn_paths in zip(funcs, rtn_paths_list):
-            if rtn_paths == None:
-                continue
-            for rtn in rtn_paths.keys():
-                rtn_funcs = self.rtn_funcs_dic.get(rtn, [])
-                rtn_funcs.append(func)
-                self.rtn_funcs_dic[rtn] = rtn_funcs
+        return
 
 if __name__ == '__main__':
     utils.install_pdb()
@@ -189,5 +179,6 @@ if __name__ == '__main__':
     log_d = opts.pickle
 
     # run return check
-    runner = CheckerRunner(type(CrossCheckers()), "fss-ckcross-", log_d, fs, *args)
+    #runner = CheckerRunner(type(CrossCheckers()), "fss-ckcross-", log_d, fs, *args)
+    runner = CheckerRunner(type(CrossCheckers()), "fss-ckcross-", log_d, fs, check_all=True, debug=True)
     runner.run_check()
