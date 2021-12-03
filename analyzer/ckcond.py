@@ -4,7 +4,8 @@ import os
 import sys
 import dbg
 import utils
-import cPickle as pickle
+#import cPickle as pickle
+import pickle
 from color import Color
 import optparse
 import collections

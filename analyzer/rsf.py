@@ -59,7 +59,7 @@ def __test_range_set_factory():
                "retval", 
                "foo($A1__xxx)"]
     rs = build(rs_strs)
-    print rs
+    print (rs)
     
 if __name__ == '__main__':
     utils.install_pdb()

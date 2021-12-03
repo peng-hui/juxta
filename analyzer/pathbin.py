@@ -4,7 +4,8 @@ import os
 import sys
 import dbg
 import utils
-import cPickle as pickle
+#import cPickle as pickle
+import pickle
 import pdb
 import fsop
 import time
@@ -120,7 +121,7 @@ class PathBin(object):
         if not fn in ALL_ENTRY_FUNCS:
             return
         """
-            
+        # print('hello world');  
         # normalization
         ArgNormalizer(path)
 
@@ -180,9 +181,9 @@ def __test_simple_load_func(func):
     pathbin.load_from_pickle(func, pkl_name)
     rtn_paths = pathbin[func]
     for ret_expr, paths in rtn_paths.iteritems():
-        print "ret:", ret_expr
+        print ("ret:", ret_expr)
         for path in paths:
-            print path
+            print (path)
     return
             
 if __name__ == '__main__':

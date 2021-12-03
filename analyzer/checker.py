@@ -4,7 +4,9 @@ import os
 import sys
 import dbg
 import utils
-import cPickle as pickle
+#import cPickle as pickle
+import pickle
+
 import errno
 from color import Color
 import optparse
@@ -21,7 +23,7 @@ from rsv import RangeSetVector, calc_average_rsv
 
 ROOT  = os.path.abspath(os.path.dirname(__file__))
 PICKLE_DIR = os.path.normpath(os.path.join(ROOT, "./out"))
-
+from code import SE, Node, SEmain
 class BaseChecker(object):
     def __init__(self, pathbin = None):
         self.pathbin = pathbin
@@ -152,6 +154,33 @@ def do_check(plan):
         sys.stdout = org_stdout
         sys.stderr = org_stderr
     return 0
+    # for ckcross
+def do_check1(plan, ck):
+    # redirect stdout and stderrto log files.
+    if plan.redirect:
+        out_file = join(plan.temp_d, str(plan.id).zfill(5) + ".log")
+        err_file = join(plan.temp_d, str(plan.id).zfill(5) + ".err")
+        org_stdout = sys.stdout
+        org_stderr = sys.stderr
+        sys.stdout = open(out_file, "a", buffering=0)
+        sys.stderr = open(err_file, "a", buffering=0)
+
+    # run checker
+    # ck = plan.ck_type()
+    if ck.load_pathbin(plan.log_d) == None:
+        print("> Fail to load pickle file at %s" % plan.log_d)
+        return -1
+    ck.check(plan.funcs)
+    ck.report()
+
+    # remove .err if there was no error. 
+    if plan.redirect and os.path.getsize(err_file) == 0:
+        os.remove(err_file)
+        sys.stdout.close()
+        sys.stderr.close()
+        sys.stdout = org_stdout
+        sys.stderr = org_stderr
+    return 0
 
 class CheckerRunner(object):
     def __init__(self, ck_type, out_prefix, log_d, fs, check_all = False, debug = False, *args):
@@ -177,7 +206,7 @@ class CheckerRunner(object):
         if not self.debug:
             self.__parallel_exec()
         else:
-            self.__sequential_exec()
+            self.__sequential_exec1()
 
         # done
         print("%s[3/3] Done. Logs are in %s %s" % \
@@ -196,6 +225,19 @@ class CheckerRunner(object):
         for plan in self.plans:
             plan.redirect = False
             do_check(plan)
+    
+    def __init_SE(self, ck):
+        seed = "mysql.smt"
+        SEAnalyzer = SEmain(seed)
+        ck.model_rhs = SEAnalyzer.symbolicValue
+
+    def __sequential_exec1(self):
+        ck = self.ck_type()
+        # do more things here.
+        self.__init_SE(ck)
+        for plan in self.plans:
+            plan.redirect = False
+            do_check1(plan, ck)
 
     def __generate_plan(self):
         dt = str(datetime.datetime.now()).replace(' ','-').replace(':','-')

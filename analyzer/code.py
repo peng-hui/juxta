@@ -63,8 +63,8 @@ class SE:
                 if str(operand0) not in self.variable2Expr.keys():
                     self.variable2Expr[str(operand0)] = []
                 self.variable2Expr[str(operand0)].append(operand1)
-                
                 self.partialOrderPairs.append((second, first))
+
             else:
                 if operand1.is_var:
                     if str(operand1) not in self.variable2Expr.keys():
@@ -224,8 +224,16 @@ class SE:
         self.createGraph()
         self.resolveGraph()
 
+        print(len(self.symbolicValue))
+        '''
+        how to remove duplicate ones?
+        '''
+        '''
+        for v in self.symbolicValue:
+            print(v)
+        '''
 
-def main(seed):
+def SEmain(seed):
     sources = [] # given a list of arguments we try to reconstruct the data flow
     # we distinguish equal and comparsion operators.
     script, glob = parse_file(seed, silent=False)
@@ -235,8 +243,8 @@ def main(seed):
 
     Analyzer = SE(glob)
     Analyzer.start(script)
-    script.sources = []
+    return Analyzer
     
 if __name__ == "__main__":
     seed = "mysql.smt"
-    main(seed)
+    SEmain(seed)

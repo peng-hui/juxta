@@ -59,7 +59,7 @@ def dump_known_ops(fs_d):
             # drop CONF
             if any(l.startswith(c) for c in ["#", "/", '*']):
                 continue
-            print "  %s" % l
+            print ("  %s" % l)
             if l.endswith("};"):
                 break
 
@@ -74,7 +74,7 @@ def dump_known_ops(fs_d):
                 continue
 
             if any("struct " + s in line for s in STRUCTS):
-                print __normalize(line)
+                print (__normalize(line))
                 __grep_struct(fd)
 
     for root, dirs, files in os.walk(fs_d):
@@ -126,9 +126,9 @@ def normalize_fops(pn):
                 (lhs, rhs) = line.split("=", 1)
                 lhs = lhs.strip()
                 rhs = rhs.strip()
-                print"  %-20s= %s" % (lhs, rhs)
+                print ("  %-20s= %s" % (lhs, rhs))
                 continue
-            print "%s" % line
+            print ("%s" % line)
             continue
 
         name = line.rstrip("{ = ")
@@ -140,7 +140,7 @@ def normalize_fops(pn):
                 rewritten = True
                 break
         if not rewritten:
-            print line
+            print (line)
 
 def _load_fops(pn):
 

@@ -1,10 +1,11 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 import os
 import sys
 import dbg
 import utils
-import cPickle as pickle
+#import cPickle as pickle
+import pickle
 from color import Color
 import optparse
 import collections
@@ -18,6 +19,8 @@ from argnorm import filter_out_non_args, have_args, errno_to_str
 from pathbin import PathBin, get_pickle_name
 from rsv import RangeSetVector, calc_average_rsv
 from checker import BaseChecker, CheckerRunner, CheckerPlan, SymbolTable
+
+from code import SE, Node, SEmain
 
 ROOT  = os.path.abspath(os.path.dirname(__file__))
 PICKLE_DIR = os.path.normpath(os.path.join(ROOT, "./out"))
@@ -93,6 +96,7 @@ class CrossChecker(BaseChecker):
         print("")
     def _build_vector(self, funcs):
         return
+
     def check(self, funcs):
         '''
         we know a function to analyze. 
@@ -117,8 +121,9 @@ class CrossChecker(BaseChecker):
                         # check stores.rhs
                         # remove duplicate one.
                         assert(store.rhs is not None)
-                        rhs_set.add(store.rhs)
 
+                        rhs_set.add(filter_out_non_args(store.rhs)) # filter out rhs arguments
+            
             '''
             # change them to symbol id 
             sym_id_set = set()
@@ -129,22 +134,24 @@ class CrossChecker(BaseChecker):
                     sym_id_set.add( str(sym_id) )
             '''
             
-            sv = StoreVector(func, self.rtn, rhs_set)
+            sv = CrossVector(func, self.rtn, rhs_set)
             svs.append(sv)
         return svs
-
+#import random
 class CrossCheckers(BaseChecker):
     def __init__(self):
         BaseChecker.__init__(self)
         self.rtn_funcs_dic = {} # {rtn, [list of functions]}*
         #self.symbol_tbl = SymbolTable()
-        self.cks = []
+        self.rhs = set()
+        #self.r = random.random()
+        self.model_rhs = set()
 
     def check(self, funcs):
         # collect functions, which return the same value
         rtn_paths_list = self.get_rtn_paths_list(funcs)
 
-        rhs_set = set()
+        #rhs_set = set()
         # run store check for each (return, functions) pair
         for rtn_paths in rtn_paths_list:
             for (rtn, retpaths) in rtn_paths.items():
@@ -156,12 +163,15 @@ class CrossCheckers(BaseChecker):
                         # check stores.rhs
                         # remove duplicate one.
                         assert(store.rhs is not None)
-                        rhs_set.add(store.rhs)
-                        print(store)
-
+                        self.rhs.add(filter_out_non_args(store.rhs)) # filter out rhs arguments
+                        print(filter_out_non_args(store.rhs)) # filter out rhs arguments
+                        print(type(store), type(filter_out_non_args(store.rhs))) # filter out rhs arguments
+        print('kkk==', len(self.rhs))
     def report(self, report_all = True):
         # simply gathering report from all cross checkers
         # map(lambda ck: ck.report(report_all), self.cks)
+        print('report', len(self.rhs))
+        #print(self.r)
         return
 
 if __name__ == '__main__':
@@ -182,3 +192,4 @@ if __name__ == '__main__':
     #runner = CheckerRunner(type(CrossCheckers()), "fss-ckcross-", log_d, fs, *args)
     runner = CheckerRunner(type(CrossCheckers()), "fss-ckcross-", log_d, fs, check_all=True, debug=True)
     runner.run_check()
+

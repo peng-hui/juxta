@@ -4,7 +4,12 @@ import os
 import sys
 import dbg
 import utils
-import cPickle as pickle
+import pickle
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
+
 from color import Color
 import optparse
 import collections
@@ -107,7 +112,7 @@ class StoreChecker(BaseChecker):
                 if stores == None:
                     continue
                 for store in stores:
-                    # collect LHS of stor
+                    # collect LHS of store
                     if store.lhs:
                         assert(store.lhs is not None)
                         symbol_set.add(store.lhs)

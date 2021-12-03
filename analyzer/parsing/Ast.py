@@ -710,9 +710,28 @@ class Term:
                    + subs_str + " "\
                    + self.label[0] + " " + self.label[1] + ")"
         else:
+            length = len(self.subterms)
             subs_str = self.__get_subterm_str__()
             return "(" + self.op.__str__() + " " + subs_str + ")"
-
+            if length == 2:
+                term_str = "(" + self.subterms[0].__str__() + " " + self.op.__str__() + " " + self.subterms[1].__str__() + ")"
+                print(term_str)
+                return term_str
+            else:
+                subs_str = self.__get_subterm_str__()
+                return "(" + self.op.__str__() + " " + subs_str + ")"
+    '''
+    def __get_subterm_str__(self):
+        subs_str = ""
+        length = len(self.subterms)
+        for i in range(length):
+            sb = self.subterms[i]
+            if i == length - 1:
+                subs_str += sb.__str__()
+            else:
+                subs_str += sb.__str__() + " "
+        return subs_str
+    '''
     def __repr__(self):
         if self.is_const:
             return self.name

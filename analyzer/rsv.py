@@ -407,7 +407,7 @@ def _test_range():
     rhs = Range(51, 200, 1, {"b"})
     print( lhs.distance(rhs) )
     for x in lhs.union_assign(rhs):
-        print x
+        print (x)
     lhs.div_assign(0.3)
     print(lhs)
     

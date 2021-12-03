@@ -68,7 +68,7 @@ class ArgNormalizer(object):
                 return
             arg = ta[1]
             encoded_type = ''.join( map(_mangle_type, ta[0]) )
-            self.argmap[arg] = "$A" + str(i) + '__' + encoded_type
+            self.argmap[arg] = "$A" + str(i) # + '__' + encoded_type
         self._normalize()
 
     def _normalize(self):
@@ -103,7 +103,13 @@ class ArgNormalizer(object):
         for store in stores if stores else []:
             if store.lhs:
                 store.lhs = self._normalize_expr(store.lhs)
-            store.rhs = self._normalize_expr(store.rhs)
+            store.rhs = self._normalize_store_rhs(store.rhs)
+
+    def _normalize_store_rhs(self, expr):
+        expr_str = self._normalize_expr(expr)
+        expr_str = expr_str.replace('S64 # ', '').replace('I # ', '').replace('E #', '')
+        print(expr_str)
+        return expr_str
 
     def _normalize_expr(self, expr):
         nexpr = []
@@ -230,8 +236,8 @@ if __name__ == '__main__':
 
     dbg.info("> %s", log_d)
     for path in Parser(log_d).parse():
-        print "<< Before normalization"
+        print ("<< Before normalization")
         print(path)
         npath = ArgNormalizer(path)
-        print ">> After normalization"
+        print (">> After normalization")
         print(npath)
