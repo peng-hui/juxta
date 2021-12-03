@@ -191,5 +191,5 @@ if __name__ == '__main__':
     # run return check
     #runner = CheckerRunner(type(CrossCheckers()), "fss-ckcross-", log_d, fs, *args)
     runner = CheckerRunner(type(CrossCheckers()), "fss-ckcross-", log_d, fs, check_all=True, debug=True)
-    runner.run_check()
+    runner.run_check(seed = "mysql.smt")
 

@@ -194,7 +194,7 @@ class CheckerRunner(object):
         self.check_all = check_all
         self.debug = debug
 
-    def run_check(self):
+    def run_check(self, seed):
         # setup plan for parallel analysis
         print("%s[1/3] Create analysis plan.%s" % \
               (Color.HEADER, Color.ENDC))
@@ -206,7 +206,7 @@ class CheckerRunner(object):
         if not self.debug:
             self.__parallel_exec()
         else:
-            self.__sequential_exec1()
+            self.__sequential_exec1(seed)
 
         # done
         print("%s[3/3] Done. Logs are in %s %s" % \
@@ -226,15 +226,15 @@ class CheckerRunner(object):
             plan.redirect = False
             do_check(plan)
     
-    def __init_SE(self, ck):
-        seed = "mysql.smt"
+    def __init_SE(self, ck, seed):
+        # seed = "mysql.smt"
         SEAnalyzer = SEmain(seed)
         ck.model_rhs = SEAnalyzer.symbolicValue
 
-    def __sequential_exec1(self):
+    def __sequential_exec1(self, seed):
         ck = self.ck_type()
         # do more things here.
-        self.__init_SE(ck)
+        self.__init_SE(ck, seed)
         for plan in self.plans:
             plan.redirect = False
             do_check1(plan, ck)
