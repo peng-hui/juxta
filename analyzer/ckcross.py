@@ -102,41 +102,8 @@ class CrossChecker(BaseChecker):
         we know a function to analyze. 
         but we still parse to others.
         '''
-        svs = []
+        return
 
-        # for each function
-        for func in funcs:
-            # collect LHS of @LOG_STORE for the specified return value
-            rtn_dic = self.pathbin[func]
-            rhs_set = set()
-
-            # we get rtn and retpaths
-            for (rtn, retpaths) in rtn_dic.items():
-                # for each retpath
-                for retpath in retpaths:
-                    stores = retpath.get_stores()
-                    if stores == None:
-                        continue
-                    for store in stores:
-                        # check stores.rhs
-                        # remove duplicate one.
-                        assert(store.rhs is not None)
-
-                        rhs_set.add(filter_out_non_args(store.rhs)) # filter out rhs arguments
-            
-            '''
-            # change them to symbol id 
-            sym_id_set = set()
-            for symbol in symbol_set:
-                fo_symbol = filter_out_non_args(symbol)
-                if have_args(fo_symbol):
-                    sym_id= self.symbol_tbl.get_symbol_id(fo_symbol)
-                    sym_id_set.add( str(sym_id) )
-            '''
-            
-            sv = CrossVector(func, self.rtn, rhs_set)
-            svs.append(sv)
-        return svs
 #import random
 class CrossCheckers(BaseChecker):
     def __init__(self):
@@ -163,9 +130,12 @@ class CrossCheckers(BaseChecker):
                         # check stores.rhs
                         # remove duplicate one.
                         assert(store.rhs is not None)
-                        self.rhs.add(filter_out_non_args(store.rhs)) # filter out rhs arguments
-                        print(filter_out_non_args(store.rhs)) # filter out rhs arguments
-                        print(type(store), type(filter_out_non_args(store.rhs))) # filter out rhs arguments
+                        rhs_t = filter_out_non_args(store.rhs) # filter out rhs arguments
+                        if have_args(rhs_t):
+                            rhs_t = rhs_t.replace(' ', '').replace('(', '').replace(')', '')
+                            self.rhs.add(rhs_t)
+                        #print(filter_out_non_args(store.rhs)) # filter out rhs arguments
+                        #print(type(store), type(filter_out_non_args(store.rhs))) # filter out rhs arguments
         print('kkk==', len(self.rhs))
     def report(self, report_all = True):
         # simply gathering report from all cross checkers

@@ -123,7 +123,7 @@ class StoreChecker(BaseChecker):
                 fo_symbol = filter_out_non_args(symbol)
                 if have_args(fo_symbol):
                     sym_id= self.symbol_tbl.get_symbol_id(fo_symbol)
-                    sym_id_set.add( str(sym_id) )
+                    sym_id_set.add( str(sym_id))
             
             sv = StoreVector(func, self.rtn, list(sym_id_set), self.symbol_tbl)
             svs.append(sv)

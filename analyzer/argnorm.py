@@ -115,8 +115,10 @@ class ArgNormalizer(object):
         nexpr = []
         p_is_expr = False
         for (expr, is_expr) in _tokenize_expr(expr):
+            print(expr, is_expr, p_is_expr)
             if not p_is_expr and is_expr:
-                expr = self.argmap.get(expr, expr)
+                expr = self.argmap.get(expr, 'tmp')
+
             nexpr.append(expr)
             p_is_expr = is_expr
         return ''.join(nexpr)
