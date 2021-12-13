@@ -89,9 +89,16 @@ class SE:
                             if var not in self.variable2RValue.keys():
                                 self.variable2RValue[var] = []
                             for e in self.variable2Expr[var]:
-                                #print(e, var)
+                                print(456, e, var)
                                 ecopy = copy.deepcopy(e)
-                                self.variable2RValue[var].extend(self.substitute(ecopy))
+                                tmp = self.substitute(ecopy)
+                                try:
+                                    print(123, tmp)
+                                except:
+                                    pass
+                                #if str(tmp) not in [str(i) for i in self.variable2RValue[var] if i != None]:
+                                if tmp is not None and tmp not in self.variable2RValue[var]:
+                                    self.variable2RValue[var].extend(tmp)
                                 #print(ecopy, var)
                         else:
                             print('....')
@@ -113,7 +120,7 @@ class SE:
                                 if var not in self.variable2RValue.keys():
                                     self.variable2RValue[var] = []
                             else:
-                                self.variable2RValue[var] = Var(var, self.glob[var])
+                                self.variable2RValue[var] = Var(var, 'A')
                             break
             found = 0
         self.sortedVariables = doneVariables
@@ -170,7 +177,7 @@ class SE:
         self.find_all_var(expr, occs)
         hasUnresolved = False
         for v in occs:
-            if str(v) in self.variable2RValue.keys():
+            if str(v) in self.variable2RValue.keys() and len(self.variable2RValue[str(v)]) > 0:
                 count = len(self.variable2RValue[str(v)])
                 results = [result]
 
@@ -214,7 +221,7 @@ class SE:
             if '_POST_' in str(var):
                 self.sources.append(var)
                 self.variable2Expr[str(var)] = [var]
-                arg = Var('arg' + str(count), 'A')
+                arg = Var('$A' + str(count), 'A')
                 count += 1
                 self.variable2RValue[str(var)] = [arg]
         
@@ -223,7 +230,6 @@ class SE:
         
         self.createGraph()
         self.resolveGraph()
-
         print(len(self.symbolicValue))
         '''
         how to remove duplicate ones?

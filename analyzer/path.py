@@ -101,6 +101,7 @@ class PathCall(object):
 class PathStore(object):
     def __init__(self, line):
         (stmt, loc) = utils.split(line, "@LOCATION:")
+        self.loc = loc[:loc.rfind(':')]
         # increment, decrement
         if "++" in stmt:
             self.lhs = stmt.rstrip("+")

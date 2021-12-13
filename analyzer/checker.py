@@ -230,6 +230,7 @@ class CheckerRunner(object):
         # seed = "mysql.smt"
         SEAnalyzer = SEmain(seed)
         ck.model_rhs = SEAnalyzer.symbolicValue
+        return
 
     def __sequential_exec1(self, seed):
         ck = self.ck_type()

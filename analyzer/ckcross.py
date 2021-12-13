@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import re
 import sys
 import dbg
 import utils
@@ -25,84 +26,6 @@ from code import SE, Node, SEmain
 ROOT  = os.path.abspath(os.path.dirname(__file__))
 PICKLE_DIR = os.path.normpath(os.path.join(ROOT, "./out"))
 
-class CrossVector(RangeSetVector):
-    def __init__(self, func, rtn, values):
-        self.func = func
-        self.rtn = rtn
-        self.values = values
-
-    def get_func_name(self):
-        return self.func
-
-    def get_rtn(self):
-        return self.rtn
-
-    '''
-    def get_missing_stores(self, threshold):
-        (myself_diff, avg_diff) = self.get_diffs("@LOG_STORE")
-        if avg_diff == []:
-            return ""
-        
-        total_impact = 0
-        msto_str = "{{{-- "
-        for ad in avg_diff:
-            (impact, rs) = (ad[0], ad[1])
-            assert(rs.start == rs.end)
-            symbol = self.symbol_tbl.get_symbol_string( int(rs.start) )
-            assert(symbol is not None)
-            msto_str += "<%.5s, %s%s%s> " % \
-                       (impact, Color.HEADER, symbol, Color.ENDC)
-
-            total_impact += impact
-            if total_impact >= threshold:
-                break
-        msto_str += "}}}"
-        return msto_str
-    '''
-
-    def __repr__(self):
-        return "'%s'" % self
-
-    def __str__(self):
-        return "%s:%s %d\n  "  % (self.func, self.rtn, len(self.values))
-
-class CrossChecker(BaseChecker):
-    def __init__(self, rtn, pathbin, symbol_tbl):
-        BaseChecker.__init__(self, pathbin)
-        self.rtn = rtn
-        self.symbol_tbl = symbol_tbl
-
-    def report(self, report_all = True):
-        return
-        print("%s[C] [%7s] [%.6s] [%23s] [%s]%s"% \
-              (Color.HEADER,\
-               "Ranking", "Distance", "Funtion", "Missing Updates", \
-               Color.ENDC))
-        for (ranking, result) in enumerate(self.results):
-            distance = result[0]
-            sv = result[1]
-            if not report_all and distance <= self.avg_distance:
-                break
-            (cc, ac, l) = self._get_color_code(result)
-            delta = distance - self.avg_distance
-            print("%s[%s]  %7s   %.6s   %23s   %s%s"% \
-                  (cc, ac, \
-                   ranking+1, delta, \
-                   ''.join((sv.get_func_name(), \
-                            ':', \
-                            errno_to_str(sv.get_rtn()))), \
-                   Color.ENDC, \
-                   sv.get_missing_stores(delta * 0.7)))
-        print("")
-    def _build_vector(self, funcs):
-        return
-
-    def check(self, funcs):
-        '''
-        we know a function to analyze. 
-        but we still parse to others.
-        '''
-        return
 
 #import random
 class CrossCheckers(BaseChecker):
@@ -130,17 +53,37 @@ class CrossCheckers(BaseChecker):
                         # check stores.rhs
                         # remove duplicate one.
                         assert(store.rhs is not None)
-                        rhs_t = filter_out_non_args(store.rhs) # filter out rhs arguments
+                        rhs_t = store.rhs #filter_out_non_args(store.rhs) # filter out rhs arguments
                         if have_args(rhs_t):
-                            rhs_t = rhs_t.replace(' ', '').replace('(', '').replace(')', '')
-                            self.rhs.add(rhs_t)
+                            print(rhs_t)
+                            rhs_t = re.sub('[,\(\)\s#]', '', rhs_t)
+                            rhs_t = re.sub('(tmp)+', 'tmp', rhs_t)
+                            print(rhs_t)
+                            store.rhs = rhs_t
+                            #rhs_t = rhs_t.replace(' ', '').replace('(', '').replace(')', '')
+                            self.rhs.add(store)
                         #print(filter_out_non_args(store.rhs)) # filter out rhs arguments
                         #print(type(store), type(filter_out_non_args(store.rhs))) # filter out rhs arguments
         print('kkk==', len(self.rhs))
     def report(self, report_all = True):
         # simply gathering report from all cross checkers
         # map(lambda ck: ck.report(report_all), self.cks)
+        # self.model_rhs 
+        # self.rhs
+        
+        # lets compare self.rhs and model_rhs 
         print('report', len(self.rhs))
+        locations = set()
+        for rhs in self.rhs:
+            locations.add(rhs.loc)
+        with open('results.txt', 'a+') as fp:
+            fp.write('\n'.join(locations))
+            fp.write('\n')
+        
+            # the static analysis might not be complete.
+            # therefore, we might need to design algorithms to complete it.
+            # an intuitive solution is: construct control-flow graphs and iteratively traverse the ending nodes -- the nodes that do not have data dependencies for others. But what's the difference? if a node reach the preceeding nodes must reach the identified not, there is no need to do that.
+
         #print(self.r)
         return
 
@@ -151,7 +94,12 @@ if __name__ == '__main__':
     parser = optparse.OptionParser()
     parser.add_option("--pickle", help="pickle directory", default=PICKLE_DIR)
     parser.add_option("--fs", help="List of fs", default=None)
+    parser.add_option("--out", help="output file", default = "result.txt")
     (opts, args) = parser.parse_args()
+
+    if opts.out:
+        if os.path.exists(opts.out):
+            os.remove(opts.out)
 
     fs = "*"
     if opts.fs:
@@ -162,4 +110,8 @@ if __name__ == '__main__':
     #runner = CheckerRunner(type(CrossCheckers()), "fss-ckcross-", log_d, fs, *args)
     runner = CheckerRunner(type(CrossCheckers()), "fss-ckcross-", log_d, fs, check_all=True, debug=True)
     runner.run_check(seed = "mysql.smt")
-
+    with open('results.txt', 'r+') as fp:
+        content = set(fp.readlines())
+        fp.seek(0)
+        fp.write(''.join(content))
+        fp.truncate()
